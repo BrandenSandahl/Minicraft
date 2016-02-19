@@ -37,27 +37,43 @@ public class Minicraft extends ApplicationAdapter {
         left = new TextureRegion(right);
         left.flip(true, false);
         //player animations
-        playerWalkUp = createAnimation(up, true, false);  //this is an animation for him walking 0.1 of a second
-        playerWalkDown = createAnimation(down, true, false);
-        playerWalkLeft = createAnimation(left, false, true);
-        playerWalkRight = createAnimation(right, false, true);
+        playerWalkUp = createAnimationFlip(up, true, false);
+        playerWalkDown = createAnimationFlip(down, true, false);
+        playerWalkLeft = new Animation(0.3f, grid[6][2], left);  //not sure why this one is not working? Ask Zach.
+        playerWalkRight = new Animation(0.3f, grid[6][2], right);
 
         directionAnimation = playerWalkDown; //starting position
     }
 
-    public Animation createAnimation(TextureRegion animationDirection, boolean x, boolean y) {
+
+    public Animation createAnimationFlip(TextureRegion animationDirection, boolean x, boolean y) {
         TextureRegion temp = new TextureRegion(animationDirection);
         temp.flip(x, y);
-        return new Animation(0.1f, animationDirection, temp);
+        return new Animation(0.3f, animationDirection, temp);
     }
 
     @Override
     public void render () {
-        time += Gdx.graphics.getDeltaTime();
+        time += Gdx.graphics.getDeltaTime();  //this is required to make animations work
         Gdx.gl.glClearColor(0, 0.5f, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        directionAnimation = move();
+        directionAnimation = move();  //calls a method to calculate movement, returns a direction the Char is facing.
 
+        heroWrap(); //wraps hero around the world
+
+        //I have an animation issue. I need to run some If's to solve it for now
+
+        directionTexture = (yv == 0) ? directionAnimation.getKeyFrame(time) : directionAnimation.getKeyFrame(time, true); //if no velocity, turn off the animation
+        directionTexture = (xv == 0) ? directionAnimation.getKeyFrame(time) : directionAnimation.getKeyFrame(time, true);
+
+       // directionTexture = directionAnimation.getKeyFrame(time, true);
+        batch.begin();
+        batch.draw(this.directionTexture, x, y, WIDTH, HEIGHT);
+        batch.end();
+    }
+
+    public void heroWrap() {
+        //these ifs wrap the hero around the world.
         if (y < (HEIGHT * -1) ) {
             y = Gdx.graphics.getHeight();
         }
@@ -70,16 +86,12 @@ public class Minicraft extends ApplicationAdapter {
         if ( x > Gdx.graphics.getWidth()) {
             x = (0 - WIDTH);
         }
-        directionTexture = directionAnimation.getKeyFrame(time, true);
-        batch.begin();
-        batch.draw(this.directionTexture, x, y, WIDTH, HEIGHT);
-        batch.end();
     }
 
 
     public float decelerate(float velocity ) {
 
-        float deceleration = 0.8f; //closer to 1, slower the decel
+        float deceleration = 0.7f; //closer to 1, slower the decel
         velocity *= deceleration;
         if (Math.abs(velocity) < 1) {
             velocity = 0;
@@ -89,7 +101,7 @@ public class Minicraft extends ApplicationAdapter {
 
     public Animation move() {
         //grabbing a keystroke
-        Animation directionMove = directionAnimation;
+        Animation directionMove = directionAnimation; //this needs to be whatever it was before, in case user pushes....nothing.
         if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
             yv = MAXVELOCITY;
             directionMove = playerWalkUp;
