@@ -18,7 +18,7 @@ public class Minicraft extends ApplicationAdapter {
 
 
     SpriteBatch batch;
-    TextureRegion down, up, right, left, directionTexture;
+    TextureRegion down, up, right, left, directionTexture, stand, standLeft;
     Animation playerWalkUp, playerWalkDown, playerWalkRight, playerWalkLeft, directionAnimation;
 
     float x, y, xv, yv, time;
@@ -31,6 +31,9 @@ public class Minicraft extends ApplicationAdapter {
         Texture tiles = new Texture("tiles.png");
         TextureRegion[][] grid = TextureRegion.split(tiles, 16, 16);
         //player
+        stand = grid[6][2];
+        standLeft = new TextureRegion(stand);
+        standLeft.flip(true, false);
         down = grid[6][0];
         up = grid[6][1];
         right = grid[6][3];
@@ -39,8 +42,8 @@ public class Minicraft extends ApplicationAdapter {
         //player animations
         playerWalkUp = createAnimationFlip(up, true, false);
         playerWalkDown = createAnimationFlip(down, true, false);
-        playerWalkLeft = new Animation(0.3f, grid[6][2], left);  //not sure why this one is not working? Ask Zach.
-        playerWalkRight = new Animation(0.3f, grid[6][2], right);
+        playerWalkLeft = new Animation(0.25f, standLeft, left);  //not sure why this one is not working? Ask Zach.
+        playerWalkRight = new Animation(0.25f, stand, right);
 
         directionAnimation = playerWalkDown; //starting position
     }
@@ -49,7 +52,7 @@ public class Minicraft extends ApplicationAdapter {
     public Animation createAnimationFlip(TextureRegion animationDirection, boolean x, boolean y) {
         TextureRegion temp = new TextureRegion(animationDirection);
         temp.flip(x, y);
-        return new Animation(0.3f, animationDirection, temp);
+        return new Animation(0.25f, animationDirection, temp);
     }
 
     @Override
@@ -61,12 +64,10 @@ public class Minicraft extends ApplicationAdapter {
 
         heroWrap(); //wraps hero around the world
 
-        //I have an animation issue. I need to run some If's to solve it for now
+        //I have an animation issue. Little guy wants to MOVE. Even when he should not.
+        //if he is not moving, turn off the animation.
+        directionTexture = (yv == 0 && xv == 0) ? directionAnimation.getKeyFrame(time) : directionAnimation.getKeyFrame(time, true);
 
-        directionTexture = (yv == 0) ? directionAnimation.getKeyFrame(time) : directionAnimation.getKeyFrame(time, true); //if no velocity, turn off the animation
-        directionTexture = (xv == 0) ? directionAnimation.getKeyFrame(time) : directionAnimation.getKeyFrame(time, true);
-
-       // directionTexture = directionAnimation.getKeyFrame(time, true);
         batch.begin();
         batch.draw(this.directionTexture, x, y, WIDTH, HEIGHT);
         batch.end();
