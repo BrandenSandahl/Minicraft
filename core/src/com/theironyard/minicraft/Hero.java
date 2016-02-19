@@ -2,7 +2,9 @@ package com.theironyard.minicraft;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 /**
  * Created by branden on 2/18/16 at 20:40.
@@ -14,6 +16,28 @@ public class Hero extends Character {
     final int WIDTH = 75;
     final int HEIGHT = 75;
     final float MAX_VELOCITY = 200;
+
+
+   // Texture tiles = new Texture("tiles.png");
+
+
+    public void drawHero() {
+        TextureRegion[][] grid = TextureRegion.split(Minicraft.tiles, 16, 16);
+        //player
+        this.stand = grid[6][2];
+        this.leftStand = new TextureRegion(this.stand);
+        this.leftStand.flip(true, false);
+        this.down = grid[6][0];
+        this.up = grid[6][1];
+        this.right = grid[6][3];
+        this.left = new TextureRegion(this.right);
+        this.left.flip(true, false);
+        //player animations
+        this.walkUp = Minicraft.createAnimationFlip(this.up, true, false);
+        this.walkDown = Minicraft.createAnimationFlip(this.down, true, false);
+        this.walkLeft = new Animation(0.25f, this.leftStand, this.left);
+        this.walkRight = new Animation(0.25f, this.stand, this.right);
+    }
 
 
 
