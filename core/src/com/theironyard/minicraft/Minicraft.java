@@ -16,9 +16,13 @@ public class Minicraft extends ApplicationAdapter {
 
    // FitViewport view;
 
+    Hero player = new Hero();
+    Zombie zombie = new Zombie();
+
 
     SpriteBatch batch;
-    TextureRegion down, up, right, left, directionTexture, stand, standLeft;
+    TextureRegion playerDown, playerUp, playerRight, playerLeft, directionTexture, standPlayer, standLeftPlayer;
+    TextureRegion zombieDown, zombieUp, zombieRight, zombieLeft, standZombie, standLeftZombie;
     Animation playerWalkUp, playerWalkDown, playerWalkRight, playerWalkLeft, directionAnimation;
 
     float x, y, xv, yv, time;
@@ -31,21 +35,21 @@ public class Minicraft extends ApplicationAdapter {
         Texture tiles = new Texture("tiles.png");
         TextureRegion[][] grid = TextureRegion.split(tiles, 16, 16);
         //player
-        stand = grid[6][2];
-        standLeft = new TextureRegion(stand);
-        standLeft.flip(true, false);
-        down = grid[6][0];
-        up = grid[6][1];
-        right = grid[6][3];
-        left = new TextureRegion(right);
-        left.flip(true, false);
+        player.stand = grid[6][2];
+        player.leftStand = new TextureRegion(player.stand);
+        player.leftStand.flip(true, false);
+        player.down = grid[6][0];
+        player.up = grid[6][1];
+        player.right = grid[6][3];
+        player.left = new TextureRegion(player.right);
+        player.left.flip(true, false);
         //player animations
-        playerWalkUp = createAnimationFlip(up, true, false);
-        playerWalkDown = createAnimationFlip(down, true, false);
-        playerWalkLeft = new Animation(0.25f, standLeft, left);  //not sure why this one is not working? Ask Zach.
-        playerWalkRight = new Animation(0.25f, stand, right);
+        player.walkUp = createAnimationFlip(player.up, true, false);
+        player.walkDown = createAnimationFlip(player.down, true, false);
+        player.walkLeft = new Animation(0.25f, player.leftStand, player.left);  //not sure why this one is not working? Ask Zach.
+        player.walkRight = new Animation(0.25f, player.stand, player.right);
 
-        directionAnimation = playerWalkDown; //starting position
+        player.directionAnimation = player.walkDown; //starting position
     }
 
 
@@ -60,73 +64,19 @@ public class Minicraft extends ApplicationAdapter {
         time += Gdx.graphics.getDeltaTime();  //this is required to make animations work
         Gdx.gl.glClearColor(0, 0.5f, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        directionAnimation = move();  //calls a method to calculate movement, returns a direction the Char is facing.
+        directionAnimation = player.heroMove();  //calls a method to calculate movement, returns a direction the Char is facing.
 
-        heroWrap(); //wraps hero around the world
+        player.heroWrap(); //wraps hero around the world
 
         //I have an animation issue. Little guy wants to MOVE. Even when he should not.
         //if he is not moving, turn off the animation.
-        directionTexture = (yv == 0 && xv == 0) ? directionAnimation.getKeyFrame(time) : directionAnimation.getKeyFrame(time, true);
+        directionTexture = (player.yv == 0 && player.xv == 0) ? directionAnimation.getKeyFrame(time) : directionAnimation.getKeyFrame(time, true);
 
         batch.begin();
-        batch.draw(this.directionTexture, x, y, WIDTH, HEIGHT);
+        batch.draw(this.directionTexture, player.x, player.y, player.WIDTH, player.HEIGHT);
         batch.end();
     }
 
-    public void heroWrap() {
-        //these ifs wrap the hero around the world.
-        if (y < (HEIGHT * -1) ) {
-            y = Gdx.graphics.getHeight();
-        }
-        if (y > Gdx.graphics.getHeight()) {
-            y = (0 - HEIGHT);
-        }
-        if (x < (WIDTH * -1)) {
-            x = Gdx.graphics.getWidth();
-        }
-        if ( x > Gdx.graphics.getWidth()) {
-            x = (0 - WIDTH);
-        }
-    }
-
-
-    public float decelerate(float velocity ) {
-
-        float deceleration = 0.7f; //closer to 1, slower the decel
-        velocity *= deceleration;
-        if (Math.abs(velocity) < 1) {
-            velocity = 0;
-        }
-        return velocity;
-    }
-
-    public Animation move() {
-        //grabbing a keystroke
-        Animation directionMove = directionAnimation; //this needs to be whatever it was before, in case user pushes....nothing.
-        if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
-            yv = MAXVELOCITY;
-            directionMove = playerWalkUp;
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-            yv = MAXVELOCITY * -1;
-            directionMove = playerWalkDown;
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            xv = MAXVELOCITY;
-            directionMove = playerWalkRight;
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            xv = MAXVELOCITY * -1;
-            directionMove = playerWalkLeft;
-        }
-
-        y += yv * Gdx.graphics.getDeltaTime();
-        yv = decelerate(yv);
-        x += xv * Gdx.graphics.getDeltaTime();
-        xv = decelerate(xv);
-
-        return directionMove;
-    }
 
 
 }
